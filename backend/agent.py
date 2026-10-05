@@ -1,6 +1,7 @@
 """Campus Customs chat agent (PydanticAI): wiring and entry point.
 
 The system prompt comes from prompts/prompt.md, the model from tools.get_model()
+(loaded on the first chat, so the website runs even before PORTKEY_API_KEY is set)
 (gpt-5.6-luna through Portkey), and the tools from tools.py.
 
 Quick test from the backend/ folder:
@@ -62,7 +63,7 @@ LIMITS = UsageLimits(request_limit=6, tool_calls_limit=8, total_tokens_limit=40_
 MAX_HISTORY_TURNS = 12
 
 agent = Agent(
-    get_model(),
+    None,  # the model is passed to each run by chat(), via get_model()
     instructions=PROMPT_PATH.read_text(encoding="utf-8"),
     output_type=ChatAnswer,
     deps_type=ChatDeps,
@@ -317,12 +318,15 @@ async def chat(message: str, history: list[ChatTurn], deps: ChatDeps) -> ChatRep
     show_products_on_page, the page results for the website to render. Every run, including
     ones that fail, is appended to output/audit_trail.json.
     """
+    model = get_model()  # raises MissingModelKey before anything is logged if the key isn't set
     run_id, started = uuid.uuid4().hex[:12], time.time()
     model_history = to_model_history(history)
     stop_reason, reply = "error", None
     with capture_run_messages() as messages:
         try:
-            result = await agent.run(message, message_history=model_history, deps=deps, usage_limits=LIMITS)
+            result = await agent.run(
+                message, model=model, message_history=model_history, deps=deps, usage_limits=LIMITS
+            )
             answer = result.output
             reply = ChatReply(
                 reply=answer.message.strip(),

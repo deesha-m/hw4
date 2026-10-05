@@ -36,6 +36,7 @@ from models import (
     WeatherPick,
 )
 from tools import (
+    MissingModelKey,
     PRODUCT_QUERY,
     ROOT,
     SIZE_ORDER,
@@ -375,6 +376,9 @@ async def chat_route(body: ChatRequest, request: Request) -> ChatReply:
             raise HTTPException(status_code=502, detail="The assistant is unavailable right now. Please try again.")
         log.warning("Chat message blocked by the provider's content filter")
         reply = ChatReply(reply=BLOCKED_REPLY, products=[])
+    except MissingModelKey as err:
+        log.warning(str(err))
+        raise HTTPException(status_code=503, detail="The shopping assistant isn't set up yet: add PORTKEY_API_KEY to hw4/.env and restart the backend.")
     except UsageLimitExceeded:
         log.warning("Chat hit its usage limit")
         raise HTTPException(status_code=502, detail="That question took too long to answer. Try asking it more simply.")

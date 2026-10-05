@@ -106,5 +106,6 @@ Every chat run is appended to `output/audit_trail.json`.
 
 - **Secrets:** the real `.env`, database and images are excluded by `.gitignore`. `.env.example` has placeholders only.
 - **Optional `.env` setting:** `SESSION_SECRET` keeps logins valid across backend restarts.
+- **Without a key:** if `PORTKEY_API_KEY` is missing, the site, products and accounts still work, and the chat replies with a message saying to add the key.
 - **Without internet:** the weather strip hides itself if Open-Meteo can't be reached. Everything else works without it.
 - **More detail:** see `output/harness.md` for the architecture, models, tools, safety rules, audit trail, and specs and limits.

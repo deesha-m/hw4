@@ -58,7 +58,7 @@ ROOT = HERE.parent
 DB_PATH = ROOT / "data" / "campus_customs.db"
 log = logging.getLogger("campus_customs")
 
-# Secrets come from a .env file: homework/4 first, then the course folder (AI Foundations).
+# Secrets come from a .env file: the hw4 folder first, then (for the course setup) two levels up.
 for env_file in (HERE.parent / ".env", HERE.parents[2] / ".env"):
     load_dotenv(env_file, override=False)
 MODEL_NAME = os.getenv("CAMPUS_CUSTOMS_MODEL", "gpt-5.6-luna")
@@ -127,11 +127,16 @@ def connect(write: bool = False) -> Iterator[sqlite3.Connection]:
 # --- Model ---
 
 
+class MissingModelKey(RuntimeError):
+    """Raised when PORTKEY_API_KEY isn't set. The site still runs; only the chat needs the key."""
+
+
+@lru_cache
 def get_model() -> OpenAIChatModel:
-    """The course model (gpt-5.6-luna by default) through the Portkey gateway."""
+    """The course model (gpt-5.6-luna by default) through the Portkey gateway. Built once, on first use."""
     key = os.getenv("PORTKEY_API_KEY")
     if not key:
-        raise RuntimeError("PORTKEY_API_KEY was not found in homework/4/.env or the course .env")
+        raise MissingModelKey("PORTKEY_API_KEY is not set. Add it to hw4/.env (see .env.example) and restart the backend.")
     client = AsyncOpenAI(
         base_url="https://api.portkey.ai/v1",
         api_key=key,

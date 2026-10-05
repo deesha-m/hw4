@@ -75,7 +75,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 cd frontend && npm install
 ```
 
-**Secrets:** `PORTKEY_API_KEY` is read from `homework/4/.env`, falling back to the course `.env` in `AI Foundations/`. Optionally, set `SESSION_SECRET` in `homework/4/.env` so logins survive server restarts (see `.env.example`). Keys are never hard-coded, and `.env` is in `.gitignore`.
+**Secrets:** `PORTKEY_API_KEY` is read from `hw4/.env` (copy `.env.example`), falling back to the course `.env` two levels up. Without it the site still runs, but the chat replies with a setup message. Optionally, set `SESSION_SECRET` in `homework/4/.env` so logins survive server restarts (see `.env.example`). Keys are never hard-coded, and `.env` is in `.gitignore`.
 
 **Start the two servers, each in its own terminal:**
 
@@ -211,7 +211,7 @@ The look is a "heritage shop": paper, ink, brass trim, brick and Yale Blue. The 
 
 ```python
 agent = Agent(
-    get_model(),                                   # gpt-5.6-luna through Portkey (tools.py)
+    None,                                          # model passed per run: get_model() (tools.py)
     instructions=PROMPT_PATH.read_text(),          # backend/prompts/prompt.md
     output_type=ChatAnswer,                        # structured reply (models.py)
     deps_type=ChatDeps,                            # customer, current page, weather, page results
@@ -219,7 +219,7 @@ agent = Agent(
 )
 ```
 
-- **Model:** `get_model()` creates an `AsyncOpenAI` client pointed at `https://api.portkey.ai/v1`, with the Portkey key and provider headers, a 60-second timeout and 2 network retries. It's wrapped in PydanticAI's `OpenAIChatModel`. The name defaults to `gpt-5.6-luna` (override with `CAMPUS_CUSTOMS_MODEL`).
+- **Model:** on the first chat, `get_model()` (cached) creates an `AsyncOpenAI` client pointed at `https://api.portkey.ai/v1`, with the Portkey key and provider headers, a 60-second timeout and 2 network retries. It's wrapped in PydanticAI's `OpenAIChatModel`. The name defaults to `gpt-5.6-luna` (override with `CAMPUS_CUSTOMS_MODEL`). Because the model loads lazily, the website, products and accounts work even before `PORTKEY_API_KEY` is set. Only `POST /api/chat` answers 503 with "add PORTKEY_API_KEY to hw4/.env".
 - **Static instructions:** `prompts/prompt.md`, covering voice, how to answer, which tool to call, page search, customer and page context, price and stock answers, and the safety rules. It's read once at startup, so restart after editing it.
 - **Dynamic instructions** (`@agent.instructions` functions in `agent.py`, rebuilt on every message from deps):
   - `customer_context`: who is chatting (name, email, customer-since, saved messages) or "a guest".
@@ -231,7 +231,7 @@ agent = Agent(
 
 ### 6.2 The agent loop for one message (`agent.chat()`)
 
-1. `agent.run(message, message_history, deps, usage_limits=LIMITS)`, wrapped in `capture_run_messages()` so that even failed runs can be audited.
+1. `agent.run(message, model=get_model(), message_history, deps, usage_limits=LIMITS)`, wrapped in `capture_run_messages()` so that even failed runs can be audited.
 2. Each loop iteration is one model request. The model either calls tools (whose results go back to it) or calls `final_result` with a `ChatAnswer`.
 3. The output checks run on the `ChatAnswer`. On failure, the model gets a retry.
 4. The run stops with one of these reasons:
