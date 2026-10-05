@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>App Check · Campus Customs</title>
+  <style>
+    :root { --paper: #f5f1e8; --card: #fbf9f4; --ink: #1b1a17; --muted: #857e72; --line: #ddd5c6; --brass: #a8844f; --navy: #00356b; --pass: #2f6b4f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; }
+    main { max-width: 1080px; margin: 0 auto; padding: 48px 28px 80px; }
+    h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif; font-weight: 600; line-height: 1.15; }
+    h1 { font-size: 2.6rem; margin: 0 0 6px; }
+    h2 { font-size: 1.9rem; margin: 0 0 4px; }
+    h3 { font-size: 1.25rem; margin: 26px 0 8px; }
+    .meta { color: var(--muted); margin: 0 0 28px; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); font-size: 0.92rem; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+    .pass { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--pass); color: #fff; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; }
+    section.check { margin-top: 56px; padding-top: 28px; border-top: 3px double var(--line); }
+    .eyebrow { margin: 0 0 4px; color: var(--brass); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
+    figure { margin: 18px 0 0; }
+    figure a { display: block; border: 1px solid var(--line); box-shadow: 0 16px 30px -20px rgba(0,0,0,.35); }
+    figure img { display: block; width: 100%; height: auto; }
+    figcaption { margin-top: 10px; padding: 10px 14px; background: var(--card); border-left: 3px solid var(--brass); font-size: 0.95rem; }
+    figcaption strong { color: var(--navy); }
+    blockquote { margin: 10px 0; padding: 8px 14px; background: #fff; border-left: 3px solid var(--navy); font-style: italic; }
+    code { font: 0.85em ui-monospace, Menlo, monospace; background: #efe9dc; padding: 1px 5px; }
+    .note { color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">MGT 409 · Homework 4 · Problem 11</p>
+  <h1>App Check: Campus Customs live site</h1>
+  <p class="meta">Tested October 5, 2026 on the running app (React + Vite front end at <code>localhost:5173</code>, FastAPI + PydanticAI backend at <code>localhost:8000</code>, model <code>gpt-5.6-luna</code> via Portkey). Shopper: a guest (not logged in), using Chrome at 1600 × 1000. Click any screenshot to open it full size.</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Check</th><th>What we looked for</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><a href="#inventory">Chat checks an item's inventory</a></td><td>Stock and price in the chat match the database exactly</td><td><span class="pass">PASS</span></td></tr>
+      <tr><td>2</td><td><a href="#search">Category question → search-result cards</a></td><td>"What hoodies do you have?" fills the page with hoodie cards that still open the detail page</td><td><span class="pass">PASS</span></td></tr>
+      <tr><td>3</td><td><a href="#usability">Problem 9 usability feature</a></td><td>Category chips, the "in stock in size" filter and sorting all work together</td><td><span class="pass">PASS</span></td></tr>
+      <tr><td>3b</td><td><a href="#alternatives">Bonus: sold-out size → in-stock alternatives</a></td><td>A sold-out size is stated honestly, with similar items in that size suggested</td><td><span class="pass">PASS</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ===================================================== 1 -->
+  <section class="check" id="inventory">
+    <p class="eyebrow">Check 1</p>
+    <h2>Chat checks the inventory level of an item</h2>
+    <p>On the Baseball Left Chest Crewneck product page, the shopper asked:</p>
+    <blockquote>How many of this are left in medium, and how much is it?</blockquote>
+    <figure>
+      <a href="app_check_images/inventory.png"><img src="app_check_images/inventory.png" alt="Product page for the Baseball Left Chest Crewneck with the chat answering that 5 are left in medium at $58" /></a>
+      <figcaption><strong>What this proves:</strong> the agent knew "this" meant the product on screen and answered "5 left in medium… It's $58." Both numbers match the database row below exactly. The page's own hanging tags agree (M "last 5!", XS and XL sold out), and the receipt card shows the database price.</figcaption>
+    </figure>
+    <h3>Database check (<code>data/campus_customs.db</code>, read-only)</h3>
+    <table>
+      <thead><tr><th>Product</th><th>Price</th><th>XS</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>XXL</th></tr></thead>
+      <tbody><tr><td>Baseball Left Chest Crewneck</td><td>$58.00</td><td>0</td><td>15</td><td><strong>5</strong></td><td>25</td><td>0</td><td>25</td></tr></tbody>
+    </table>
+    <p class="note">How the agent got it: it called <code>check_stock(product_id, size="M")</code> and <code>get_product_info</code>, which read <code>inventory</code> and <code>catalogue</code>. A code check also rejects any $ price that didn't come from a tool.</p>
+  </section>
+
+  <!-- ===================================================== 2 -->
+  <section class="check" id="search">
+    <p class="eyebrow">Check 2</p>
+    <h2>Dynamic search-result cards after a category question</h2>
+    <p>From the Home page, the shopper asked:</p>
+    <blockquote>What hoodies do you have?</blockquote>
+    <figure>
+      <a href="app_check_images/search_results.png"><img src="app_check_images/search_results.png" alt="Products page titled Hoodies, From your chat, 27 matches, with hoodie cards and the chat reply" /></a>
+      <figcaption><strong>What this proves:</strong> the agent's structured search results became product cards on the website. The site moved to Products and shows "From your chat · Hoodies · 27 matches," with 27 cards (image, name, price, short description). That matches the 27 hoodie products in the catalogue, and the chat reply links to the page.</figcaption>
+    </figure>
+    <figure>
+      <a href="app_check_images/search_card_detail.png"><img src="app_check_images/search_card_detail.png" alt="Detail page for the Brooks Brothers Double Knit Full Zip Hoodie opened from a chat result card" /></a>
+      <figcaption><strong>What this proves:</strong> clicking the second card the chat added (Brooks Brothers Double Knit Full Zip Hoodie) still opens the single-item page from Problem 3. It shows the large image, $88, the full description, colors and stock by size (XS sold out).</figcaption>
+    </figure>
+  </section>
+
+  <!-- ===================================================== 3 -->
+  <section class="check" id="usability">
+    <p class="eyebrow">Check 3 · Problem 9 usability feature</p>
+    <h2>Category chips, "in stock in size" filter and sorting</h2>
+    <p>On the Products page (102 items), the shopper chose <strong>In stock in: XS</strong>, the <strong>Crewnecks</strong> chip, and <strong>Sort: Price, low to high</strong>.</p>
+    <figure>
+      <a href="app_check_images/usability_filters.png"><img src="app_check_images/usability_filters.png" alt="Products page filtered to crewnecks in stock in XS, sorted by price, showing 18 of 102 items" /></a>
+      <figcaption><strong>What this proves:</strong> the three filters work together. The grid drops to "18 of 102 items," and every chip's count updates for XS (All 75, Crewnecks 18, Hoodies 21…). The Baseball Left Chest Crewneck, which is sold out in XS, is correctly hidden, and the category is saved in the URL (<code>?category=crewneck</code>).</figcaption>
+    </figure>
+  </section>
+
+  <section class="check" id="alternatives">
+    <p class="eyebrow">Check 3b · Bonus Problem 9 feature</p>
+    <h2>Sold-out size → in-stock alternatives</h2>
+    <p>Continuing the chat on the Baseball Left Chest Crewneck page, the shopper asked:</p>
+    <blockquote>Is it in stock in XS?</blockquote>
+    <figure>
+      <a href="app_check_images/soldout_alternatives.png"><img src="app_check_images/soldout_alternatives.png" alt="Chat saying XS is sold out and listing similar crewnecks in stock in XS on a receipt" /></a>
+      <figcaption><strong>What this proves:</strong> the agent said "The XS is sold out right now" (the database has 0) and listed the sizes still in stock. Then it used the <code>find_alternatives</code> tool to suggest three similar $58 crewnecks that do have XS in stock, printed as a clickable receipt, so a dead end becomes a possible sale.</figcaption>
+    </figure>
+  </section>
+
+  <p class="note" style="margin-top:48px">Screenshots were captured automatically with Playwright driving Google Chrome against the live servers, with animations paused so frames are crisp. Every chat answer above came from the real agent, not a stub.</p>
+</main>
+</body>
+</html>

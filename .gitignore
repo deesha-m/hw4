@@ -1,0 +1,25 @@
+# Secrets: never commit the real .env (use .env.example)
+.env
+.env.*
+!.env.example
+
+# Local-only data pack: database and product images (incl. cleaned copies)
+data/
+*.db
+*.db-journal
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node / Vite
+node_modules/
+frontend/dist/
+
+# Editor, OS and local tool settings
+.claude/
+.vscode/
+.idea/
+.DS_Store
+*.log

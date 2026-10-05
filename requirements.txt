@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+pydantic-ai-slim[openai]
+# for scripts/clean_product_images.py
+pillow
+numpy
+certifi
