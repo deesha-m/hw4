@@ -163,3 +163,19 @@ Testing showed card numbers being stored in the log and the assistant mentioning
 ### Follow-up prompt
 
 No follow-up prompt was needed.
+
+## Problem 13: Push to GitHub and Submit the URL
+
+### Initial prompt
+
+Put the code in a folder named hw4, push it to a public GitHub repository, and give me the repo URL to submit to Canvas. Keep the real `.env`, `campus_customs.db` and product images out of the repo using `.gitignore`, and include `.env.example` with placeholders only. Follow the expected layout: the agent is four files in `backend/` (`prompts/prompt.md`, `agent.py`, `tools.py`, `models.py`), and `README.md` explains how to run the front end and back end after placing the local `data/` pack.
+
+**Agent action:** The agent asked how to name the repo and what to do with the extra backend files. It then:
+- merged the five support modules into `main.py` and `tools.py` so `backend/` matches the expected layout, and retested accounts, chat, history, weather, the audit trail and a cold start;
+- wrote the README, `.gitignore` and `.env.example`;
+- scanned the staged files for keys, password hashes and personal paths;
+- pushed to the public repo https://github.com/deesha-m/hw4 and verified a fresh clone.
+
+### Follow-up prompt
+
+No follow-up prompt was needed.
